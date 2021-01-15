@@ -1,0 +1,26 @@
+<dataConfig>
+
+	<dataSource name="jdbc" type="JdbcDataSource" driver="org.postgresql.Driver" 
+	url="jdbc:postgresql://localhost:5432/apisys_afonte" 
+	user="postgres" password="123456"/>
+	
+    <document>
+        <entity name="usager" pk = "id_us_usager"
+                transformer="TemplateTransformer"
+                query="SELECT id_us_usager,
+                              nom,
+                              prenom
+                         FROM us_usager_solr"
+				deltaQuery="SELECT id_us_usager,
+                              nom,
+                              prenom
+                         FROM us_usager_solr where id_us_usager=1 "
+
+						 >
+            <field column="id_us_usager" name="id" />
+            <field column="nom" name="nom" />
+            <field column="prenom" name="prenom" />
+			
+        </entity>
+    </document>
+</dataConfig>
