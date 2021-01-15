@@ -1,0 +1,166 @@
+<dataConfig>
+
+	<dataSource type="JdbcDataSource" driver="com.microsoft.sqlserver.jdbc.SQLServerDriver"    
+		     url="jdbc:sqlserver://200.219.216.237:1433;databaseName=silviaarmarinho"    
+		     user="sasilviaarmarinho" password="F3lipe#"/> 	
+	
+    <document>
+        <entity name="sasilviaarmarinho" pk="unique" 
+                transformer="TemplateTransformer"
+                query="SELECT CONCAT(CAST(PRD.codProd AS int), '-', PRC.codGroup) AS [unique],
+								CAST(G.codGrid AS int) AS codGrid, 
+								CAST(PRD.codProd AS int) AS codProd, 
+								'' AS imgSrc,
+								TRIM(PRD.[desc]) AS name, 
+								G.ref AS reference,
+								(SELECT COALESCE(ISNULL(DET.[desc], ' '), ' ') FROM [sasilviaarmarinho].tbl_details DET WHERE (DET.codTitle = 1) AND (DET.codProd = PRD.codProd)) AS description,
+								TRIM(B.name) AS brand, 
+								CAST(PRD.dspOrder AS int) AS priority, 
+								CAST(PRC.codGroup AS int) AS codCatalog, 
+								ROUND((1 - CAST(PRC.discRate AS float) / 100) * (CAST(PRC.prc AS float)), 2) AS ourPrice,
+								CAST(PRC.codAvailability AS int) AS availabilityCode, 
+								CAST(PRC.codStatus AS int) AS statusCode,
+								G.link, 
+								G.codComp,
+								(SELECT CAST(MAX(SC.score) AS int) AS scoreProd from [sasilviaarmarinho].stats_product_score SC where SC.sku = G.ref) AS scoreProd
+								FROM [sasilviaarmarinho].[tbl_grid] G
+								INNER JOIN [sasilviaarmarinho].tbl_prod PRD ON G.codProd = PRD.codProd 
+								INNER JOIN [sasilviaarmarinho].tbl_brands B ON PRD.codBrand = B.codBrand 
+								INNER JOIN [sasilviaarmarinho].tbl_prices PRC ON G.codGrid = PRC.codGrid 
+								WHERE (G.active = 1) AND (G.link = 1) "
+				preImportDeleteQuery="SELECT CONCAT(CAST(PRD.codProd AS int), '-', PRC.codGroup) AS [unique],
+								CAST(G.codGrid AS int) AS codGrid, 
+								CAST(PRD.codProd AS int) AS codProd, 
+								'' AS imgSrc,
+								TRIM(PRD.[desc]) AS name, 
+								G.ref AS reference,
+								(SELECT COALESCE(ISNULL(DET.[desc], ' '), ' ') FROM [sasilviaarmarinho].tbl_details DET WHERE (DET.codTitle = 1) AND (DET.codProd = PRD.codProd)) AS description,
+								TRIM(B.name) AS brand, 
+								CAST(PRD.dspOrder AS int) AS priority, 
+								CAST(PRC.codGroup AS int) AS codCatalog, 
+								ROUND((1 - CAST(PRC.discRate AS float) / 100) * (CAST(PRC.prc AS float)), 2) AS ourPrice,
+								CAST(PRC.codAvailability AS int) AS availabilityCode, 
+								CAST(PRC.codStatus AS int) AS statusCode,
+								G.link, 
+								G.codComp,
+								(SELECT CAST(MAX(SC.score) AS int) AS scoreProd from [sasilviaarmarinho].stats_product_score SC where SC.sku = G.ref) AS scoreProd
+							FROM [sasilviaarmarinho].[tbl_grid] G
+							INNER JOIN [sasilviaarmarinho].tbl_prod PRD ON G.codProd = PRD.codProd 
+							INNER JOIN [sasilviaarmarinho].tbl_brands B ON PRD.codBrand = B.codBrand 
+							INNER JOIN [sasilviaarmarinho].tbl_prices PRC ON G.codGrid = PRC.codGrid 
+							LEFT JOIN [sasilviaarmarinho].[entities_changelog] CHG_PRD ON CHG_PRD.id = PRD.codProd 
+							LEFT JOIN [sasilviaarmarinho].[entities_changelog] CHG_VAR ON CHG_VAR.id = G.codGrid 
+							LEFT JOIN [sasilviaarmarinho].[entities_changelog] CHG_PRI ON CHG_PRI.id = PRC.codPrice 
+							WHERE (G.active = 1) AND (G.link = 1) 
+							AND (CHG_PRD.id IS NOT NULL OR CHG_VAR.id IS NOT NULL OR CHG_PRI.id IS NOT NULL)
+							AND (CHG_PRD.action = 'DELETE' OR CHG_VAR.action = 'DELETE' OR CHG_PRI.action = 'DELETE')
+							AND (CHG_PRD.entity = 'Product' OR CHG_VAR.entity = 'ProductVariant' OR CHG_PRI.entity = 'Price')" 
+				deletedPkQuery=" SELECT CONCAT(CAST(PRD.codProd AS int), '-', PRC.codGroup) AS [unique],
+								CAST(G.codGrid AS int) AS codGrid, 
+								CAST(PRD.codProd AS int) AS codProd, 
+								'' AS imgSrc,
+								TRIM(PRD.[desc]) AS name, 
+								G.ref AS reference,
+								(SELECT COALESCE(ISNULL(DET.[desc], ' '), ' ') FROM [sasilviaarmarinho].tbl_details DET WHERE (DET.codTitle = 1) AND (DET.codProd = PRD.codProd)) AS description,
+								TRIM(B.name) AS brand, 
+								CAST(PRD.dspOrder AS int) AS priority, 
+								CAST(PRC.codGroup AS int) AS codCatalog, 
+								ROUND((1 - CAST(PRC.discRate AS float) / 100) * (CAST(PRC.prc AS float)), 2) AS ourPrice,
+								CAST(PRC.codAvailability AS int) AS availabilityCode, 
+								CAST(PRC.codStatus AS int) AS statusCode,
+								G.link, 
+								G.codComp,
+								(SELECT CAST(MAX(SC.score) AS int) AS scoreProd from [sasilviaarmarinho].stats_product_score SC where SC.sku = G.ref) AS scoreProd
+							FROM [sasilviaarmarinho].[tbl_grid] G
+							INNER JOIN [sasilviaarmarinho].tbl_prod PRD ON G.codProd = PRD.codProd 
+							INNER JOIN [sasilviaarmarinho].tbl_brands B ON PRD.codBrand = B.codBrand 
+							INNER JOIN [sasilviaarmarinho].tbl_prices PRC ON G.codGrid = PRC.codGrid 
+							LEFT JOIN [sasilviaarmarinho].[entities_changelog] CHG_PRD ON CHG_PRD.id = PRD.codProd  
+							LEFT JOIN [sasilviaarmarinho].[entities_changelog] CHG_VAR ON CHG_VAR.id = G.codGrid 
+							LEFT JOIN [sasilviaarmarinho].[entities_changelog] CHG_PRI ON CHG_PRI.id = PRC.codPrice 
+							WHERE (G.active = 1) AND (G.link = 1) 
+							AND (CHG_PRD.id IS NOT NULL OR CHG_VAR.id IS NOT NULL OR CHG_PRI.id IS NOT NULL)
+							AND (CHG_PRD.id IS NOT NULL OR CHG_VAR.id IS NOT NULL OR CHG_PRI.id IS NOT NULL)
+							AND (CHG_PRD.action = 'DELETE' OR CHG_VAR.action = 'DELETE' OR CHG_PRI.action = 'DELETE')
+							AND (CHG_PRD.entity = 'Product' OR CHG_VAR.entity = 'ProductVariant' OR CHG_PRI.entity = 'Price')
+							AND (CHG_PRD.made_at > '${dataimporter.last_index_time}' OR CHG_VAR.made_at > '${dataimporter.last_index_time}' OR CHG_PRI.made_at > '${dataimporter.last_index_time}')"				
+				deltaImportQuery="SELECT CONCAT(CAST(PRD.codProd AS int), '-', PRC.codGroup) AS [unique],
+								CAST(G.codGrid AS int) AS codGrid, 
+								CAST(PRD.codProd AS int) AS codProd, 
+								'' AS imgSrc,
+								TRIM(PRD.[desc]) AS name, 
+								G.ref AS reference,
+								(SELECT COALESCE(ISNULL(DET.[desc], ' '), ' ') FROM [sasilviaarmarinho].tbl_details DET WHERE (DET.codTitle = 1) AND (DET.codProd = PRD.codProd)) AS description,
+								TRIM(B.name) AS brand, 
+								CAST(PRD.dspOrder AS int) AS priority, 
+								CAST(PRC.codGroup AS int) AS codCatalog, 
+								ROUND((1 - CAST(PRC.discRate AS float) / 100) * (CAST(PRC.prc AS float)), 2) AS ourPrice,
+								CAST(PRC.codAvailability AS int) AS availabilityCode, 
+								CAST(PRC.codStatus AS int) AS statusCode,
+								G.link, 
+								G.codComp,
+								(SELECT CAST(MAX(SC.score) AS int) AS scoreProd from [sasilviaarmarinho].stats_product_score SC where SC.sku = G.ref) AS scoreProd
+								FROM [sasilviaarmarinho].[tbl_grid] G
+								INNER JOIN [sasilviaarmarinho].tbl_prod PRD ON G.codProd = PRD.codProd 
+								INNER JOIN [sasilviaarmarinho].tbl_brands B ON PRD.codBrand = B.codBrand 
+								INNER JOIN [sasilviaarmarinho].tbl_prices PRC ON G.codGrid = PRC.codGrid 
+								WHERE CONCAT(CAST(PRD.codProd AS int), '-', PRC.codGroup) = '${dataimporter.delta.unique}'"
+				deltaQuery=" SELECT CONCAT(CAST(PRD.codProd AS int), '-', PRC.codGroup) AS [unique]
+							FROM [sasilviaarmarinho].[tbl_grid] G
+							INNER JOIN [sasilviaarmarinho].tbl_prod PRD ON G.codProd = PRD.codProd 
+							INNER JOIN [sasilviaarmarinho].tbl_brands B ON PRD.codBrand = B.codBrand 
+							INNER JOIN [sasilviaarmarinho].tbl_prices PRC ON G.codGrid = PRC.codGrid 
+							LEFT JOIN [sasilviaarmarinho].[entities_changelog] CHG_PRD ON CHG_PRD.id = PRD.codProd 
+							LEFT JOIN [sasilviaarmarinho].[entities_changelog] CHG_VAR ON CHG_VAR.id = G.codGrid 
+							LEFT JOIN [sasilviaarmarinho].[entities_changelog] CHG_PRI ON CHG_PRI.id = PRC.codPrice 
+							WHERE (G.active = 1) AND (G.link = 1) 
+							AND (CHG_PRD.id IS NOT NULL OR CHG_VAR.id IS NOT NULL OR CHG_PRI.id IS NOT NULL)
+							AND (CHG_PRD.action IN ('UPDATE', 'INSERT') OR CHG_VAR.action IN ('UPDATE', 'INSERT') OR CHG_PRI.action IN ('UPDATE', 'INSERT'))
+							AND (CHG_PRD.entity = 'Product' OR CHG_VAR.entity = 'ProductVariant' OR CHG_PRI.entity = 'Price')
+							AND (CHG_PRD.made_at > '${dataimporter.last_index_time}' OR CHG_VAR.made_at > '${dataimporter.last_index_time}' OR CHG_PRI.made_at > '${dataimporter.last_index_time}')	" >
+
+            <field column="unique" name="unique" />
+			<field column="codGrid" name="codGrid" />
+			<field column="codProd" name="codProd" />
+			<field column="imgSrc" name="imgSrc" />
+			<field column="reference" name="reference" />
+			<field column="description" name="description" />
+			<field column="name" name="name" />
+			<field column="brand" name="brand" />
+			<field column="priority" name="priority" />
+			<field column="codCatalog" name="codCatalog" />
+			<field column="ourPrice" name="ourPrice" />
+			<field column="availabilityCode" name="availabilityCode" />
+			<field column="statusCode" name="statusCode" />
+			<field column="scoreProd" name="scoreProd" />
+			
+			<entity name="menu_1" 
+					transformer="TemplateTransformer"
+					query="SELECT DISTINCT M1.[desc] AS menu_1
+							FROM rel_menusWprod R 
+							LEFT JOIN tbl_menu1st M1 ON R.cod1stMenu = M1.cod1stMenu 
+							WHERE codProd = ${sasilviaarmarinho.codProd}" >
+				<field column="menu_1" name="menu_1" />
+			</entity>
+			
+			<entity name="menu_2" 
+					transformer="TemplateTransformer"
+					query="SELECT DISTINCT M2.[desc] AS menu_2
+							FROM rel_menusWprod R 
+							LEFT JOIN tbl_menu2nd M2 ON R.cod2ndMenu = M2.cod2ndMenu 
+							WHERE codProd = ${sasilviaarmarinho.codProd}" >
+				<field column="menu_2" name="menu_2" />
+			</entity>
+
+			<entity name="menu_3" 
+					transformer="TemplateTransformer"
+					query="SELECT DISTINCT M3.[desc] AS menu_3
+							FROM rel_menusWprod R 
+							LEFT JOIN tbl_menu3rd M3 ON R.cod3rdMenu = M3.cod3rdMenu 
+							WHERE codProd = ${sasilviaarmarinho.codProd}" >
+				<field column="menu_3" name="menu_3" />
+			</entity>
+			
+        </entity>
+    </document>
+</dataConfig>

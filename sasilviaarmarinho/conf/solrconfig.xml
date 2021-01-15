@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config>
+    <luceneMatchVersion>8.7.0</luceneMatchVersion>
+
+    <dataDir>${solr.data.dir:}</dataDir>
+	
+    <lib dir="${solr.install.dir:../../../..}/contrib/extraction/lib" regex=".*\.jar" />
+    <lib dir="${solr.install.dir:../../../..}/dist/" regex=".*\.jar" />
+    <requestHandler name="/dataimport" class="org.apache.solr.handler.dataimport.DataImportHandler">
+        <lst name="defaults">
+            <str name="config">db-config.xml</str>
+        </lst>
+    </requestHandler>
+
+    <directoryFactory
+        name="DirectoryFactory"
+        class="${solr.directoryFactory:solr.NRTCachingDirectoryFactory}"
+    />
+
+    <codecFactory class="solr.SchemaCodecFactory" />
+
+    <schemaFactory class="ClassicIndexSchemaFactory" />
+
+    <indexConfig>
+        <lockType>${solr.lock.type:native}</lockType>
+        <infoStream>true</infoStream>
+    </indexConfig>
+
+    <updateHandler class="solr.DirectUpdateHandler2">
+        <updateLog>
+            <str name="dir">${solr.ulog.dir:}</str>
+            <int name="numVersionBuckets">${solr.ulog.numVersionBuckets:65536}</int>
+        </updateLog>
+
+        <autoCommit>
+            <maxTime>${solr.autoCommit.maxTime:15000}</maxTime>
+            <openSearcher>false</openSearcher>
+        </autoCommit>
+
+        <autoSoftCommit>
+            <maxTime>${solr.autoSoftCommit.maxTime:-1}</maxTime>
+        </autoSoftCommit>
+    </updateHandler>
+
+    <query>
+        <maxBooleanClauses>1024</maxBooleanClauses>
+        <slowQueryThresholdMillis>-1</slowQueryThresholdMillis>
+        <filterCache
+            class="solr.FastLRUCache"
+            size="512"
+            initialSize="512"
+            autowarmCount="0"
+        />
+        <queryResultCache
+            class="solr.LRUCache"
+            size="512"
+            initialSize="512"
+            autowarmCount="0"
+        />
+        <documentCache
+            class="solr.LRUCache"
+            size="512"
+            initialSize="512"
+            autowarmCount="0"
+        />
+        <cache name="perSegFilter"
+            class="solr.search.LRUCache"
+            size="10"
+            initialSize="0"
+            autowarmCount="10"
+            regenerator="solr.NoOpRegenerator"
+        />
+        <enableLazyFieldLoading>true</enableLazyFieldLoading>
+        <queryResultWindowSize>36</queryResultWindowSize>
+        <queryResultMaxDocsCached>360</queryResultMaxDocsCached>
+        <listener event="newSearcher" class="solr.QuerySenderListener">
+            <arr name="queries" />
+        </listener>
+        <listener event="firstSearcher" class="solr.QuerySenderListener">
+            <arr name="queries">
+                <lst>
+                    <str name="q">static firstSearcher warming in solrconfig.xml</str>
+                </lst>
+            </arr>
+        </listener>
+        <useColdSearcher>false</useColdSearcher>
+        <maxWarmingSearchers>2</maxWarmingSearchers>
+    </query>
+
+    <requestDispatcher handleSelect="false">
+        <requestParsers
+            enableRemoteStreaming="true"
+            multipartUploadLimitInKB="2048000"
+            formdataUploadLimitInKB="2048"
+            addHttpRequestToContext="false"
+        />
+        <httpCaching never304="true" />
+    </requestDispatcher>
+
+    <requestHandler name="/admin/ping" class="solr.PingRequestHandler">
+        <lst name="invariants">
+            <str name="q">solrpingquery</str>
+        </lst>
+        <lst name="defaults">
+            <str name="echoParams">all</str>
+        </lst>
+        <!-- An optional feature of the PingRequestHandler is to configure the
+        handler with a "healthcheckFile" which can be used to enable/disable
+        the PingRequestHandler.
+        relative paths are resolved against the data dir
+        -->
+        <!-- <str name="healthcheckFile">server-enabled.txt</str> -->
+    </requestHandler>
+
+    <requestHandler name="/analysis/field"
+                    startup="lazy"
+                    class="solr.FieldAnalysisRequestHandler"/>
+
+    <requestHandler name="/analysis/document" 
+                    class="solr.DocumentAnalysisRequestHandler" 
+                    startup="lazy" />
+
+    <requestHandler name="/select" class="solr.SearchHandler">
+        <lst name="defaults">
+            <str name="echoParams">explicit</str>
+
+            <!-- eDismax query settings -->
+            <str name="defType">edismax</str>
+            <str name="qf">reference^50.0 brand^50.0 name_br^50.0 name_en^10.0 name_bmpm^10.0 description^5.0 name_phonetic^2.0</str>
+            <str name="mm">1&lt;-1 4&lt;80%</str>
+            <str name="pf"></str>
+            <str name="ps">0</str>
+            <str name="qs">0</str>
+            <str name="rows">12</str>
+            <str name="fl">*,score</str>
+            <str name="stopwords">true</str>
+            <str name="sort">name asc, score desc, scoreProd desc</str>
+            <str name="wt">json</str>
+            <str name="indent">false</str>
+            <str name="omitHeader">true</str>
+
+            <!-- Faceting defaults -->
+            <str name="facet">true</str>
+            <str name="facet.mincount">1</str>
+            <str name="facet.missing">false</str>
+<!--            <str name="facet.field">tags</str>-->
+            <str name="facet.field">menu_1</str>
+            <str name="facet.field">menu_2</str>
+            <str name="facet.field">menu_3</str>
+            <str name="facet.field">brand</str>
+<!--            <str name="facet.field">materials</str>-->
+<!--            <str name="facet.field">sizes</str>-->
+<!--            <str name="facet.field">colors</str>-->
+            <str name="facet.range">ourPrice</str>
+            <str name="f.ourPrice.facet.range.start">0</str>
+            <str name="f.ourPrice.facet.range.end">2000</str>
+            <str name="f.ourPrice.facet.range.gap">200</str>
+        </lst>
+    </requestHandler>
+
+    <searchComponent name="spellcheck" class="solr.SpellCheckComponent">
+        <str name="queryAnalyzerFieldType">shingles</str>
+
+        <lst name="spellchecker">
+            <str name="name">default</str>
+            <str name="classname">solr.DirectSolrSpellChecker</str>
+            <str name="field">name_shingles</str>
+            <str name="distanceMeasure">internal</str>
+            <float name="accuracy">0.5</float>
+            <int name="maxEdits">2</int>
+            <int name="minPrefix">1</int>
+            <int name="maxInspections">5</int>
+            <int name="minQueryLength">4</int>
+            <float name="maxQueryFrequency">0.01</float>
+<!-- NOTE: uncomment this to require suggestions to occur in 1% of the documents
+            <float name="thresholdTokenFrequency">.01</float>
+-->
+        </lst>
+
+        <lst name="spellchecker">
+            <str name="name">wordbreak</str>
+            <str name="classname">solr.WordBreakSolrSpellChecker</str>
+            <str name="field">name_shingles</str>
+            <bool name="combineWords">true</bool>
+            <bool name="breakWords">true</bool>
+            <int name="maxChanges">7</int>
+        </lst>
+    </searchComponent>
+
+    <requestHandler name="/spell" class="solr.SearchHandler" startup="lazy">
+        <lst name="defaults">
+            <str name="spellcheck">true</str>
+            <str name="spellcheck.dictionary">default</str>
+            <str name="spellcheck.dictionary">wordbreak</str>
+            <str name="spellcheck.extendedResults">true</str>
+            <str name="spellcheck.onlyMorePopular">true</str>
+            <str name="spellcheck.count">1</str>
+            <str name="spellcheck.alternativeTermCount">1</str>
+            <str name="spellcheck.maxResultsForSuggest">1</str>
+            <str name="spellcheck.collate">false</str>
+            <str name="spellcheck.accuracy">0.8</str>
+
+            <!-- standard attribs -->
+            <str name="wt">json</str>
+            <str name="indent">false</str>
+            <str name="omitHeader">true</str>
+        </lst>
+        <arr name="last-components">
+            <str>spellcheck</str>
+        </arr>
+    </requestHandler>
+
+    <searchComponent name="suggest" class="solr.SuggestComponent">
+        <lst name="suggester">
+            <str name="name">default</str>
+            <str name="lookupImpl">FuzzyLookupFactory</str><!-- NOTE: FSTLookupFactory, maybe? -->
+            <str name="dictionaryImpl">DocumentDictionaryFactory</str>
+            <str name="field">suggester</str>
+            <str name="suggestAnalyzerFieldType">text</str>
+            <str name="buildOnOptimize">true</str>
+<!--            <str name="buildOnStartup">true</str>-->
+        </lst>
+    </searchComponent>
+
+    <requestHandler name="/suggest" class="solr.SearchHandler" startup="lazy">
+        <lst name="defaults">
+            <str name="suggest">true</str>
+            <str name="suggest.dictionary">default</str>
+            <str name="suggest.count">12</str>
+
+            <!-- standard attribs -->
+            <str name="wt">json</str>
+            <str name="indent">false</str>
+            <str name="omitHeader">true</str>
+        </lst>
+        <arr name="components">
+            <str>suggest</str>
+        </arr>
+    </requestHandler>
+
+    <searchComponent name="terms" class="solr.TermsComponent" />
+
+    <requestHandler name="/terms" class="solr.SearchHandler" startup="lazy">
+        <lst name="defaults">
+            <str name="terms">true</str>
+            <str name="terms.fl">suggester</str>
+            <str name="terms.limit">4</str>
+            <str name="terms.mincount">3</str>
+            <str name="terms.regex.flag">case_insensitive</str>
+            <str name="distrib">false</str>
+
+            <!-- standard attribs -->
+            <str name="wt">json</str>
+            <str name="indent">false</str>
+            <str name="omitHeader">true</str>
+        </lst>
+        <arr name="components">
+            <str>terms</str>
+        </arr>
+    </requestHandler>
+
+    <requestHandler name="/analysis/field" class="solr.FieldAnalysisRequestHandler" startup="lazy" />
+
+    <admin>
+        <defaultQuery>*:*</defaultQuery>
+    </admin>
+</config>

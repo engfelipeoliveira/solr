@@ -1,0 +1,90 @@
+lorem,ipsum
+fio,lã
+fios => fio, lã
+lãs => lã, fio
+la => lã
+lans => lã
+lan => lã
+maquina => máquina
+máquinas => máquina
+tecidos => tecido
+lastec, lastex
+almofada para carimbo, carimbeira
+carimbeira, carimbo
+enchimento, fibra virgem
+matelasse, metalasse
+guipire, guipir
+gripir, guipire
+sao joao, são joão
+las, lãs
+pom pom , pompom
+overlok, overlock
+zíper, ziper
+anelina, anilina
+passamaria, passamanaria
+talagarça, telagarça
+tela garça, talagarça
+pelúcia, chinelufa
+pelucia, chinelufa
+casa, casinha
+scrap, scraping
+Scrapbook, Scrapbooking
+scrap, Scrapbook
+euroroma, euro roma
+marcador, marcadores
+apagável, fantasminha
+fantasminha, mágica
+roma, euroroma
+feltrar, feltragem
+botão, botões
+botao, botão
+focinho, fucinho, fuça
+fibra virgem, enchimento
+Olho Redondo, Amigurumi
+Reposicionável, Temporária
+4x24, 24 fios
+autosserviço, auto serviço
+folha de eva, placa de eva
+aplicador, pistola
+apostila, revista
+tricotin,rabo de gato
+guarany, corante
+mirela, mirella
+verniz spray, acrilfix
+rendado, rendada
+brunela, brunella
+color pull => colorpull
+magic pull => magicpull
+loli pull => lollipull
+fast pull => fastpull
+metal colors, metálica, metalizada
+cup cake, cupcake, cake
+tarracha, tarraxa
+bastidor, bordado
+laço, pronto, mágico,fácil
+poli, celofane
+ouro, dourado
+meia de ceda => meia de seda
+meia de ceda, meia de seda
+fio para macramê, linha monalisa, linha brisa
+fio para macramé, linha monalisa, linha brisa
+tecido de parede => tecido adesivo
+fio para tapete => lã paratapet
+lã para tapete => lã paratapet
+Agulha de feltro, agulha para feltrar
+agulha para feltragem, agulha para feltrar
+fita de cetin => fita de cetim
+Barbante Mesclado => Barbante Fantasia
+tiara, arquinho
+olhos, olho
+olho, olhos
+aplique, aplicação
+Sortidas, Sortido, sortida
+líquido, gel
+álcool líquido, alcool liquido
+álcool líquido, alcool
+álcool líquido, alcol
+álcool líquido, alcool 70
+fio amigurumi pelúcia, fio amigurumi pelucia
+pelúcia, pelucia
+
