@@ -1,0 +1,39 @@
+<dataConfig> 
+    <dataSource name="jdbc" type="JdbcDataSource" driver="oracle.jdbc.OracleDriver" url="jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=off)(FAILOVER=on)(DESCRIPTION=(CONNECT_TIMEOUT=3)(RETRY_COUNT=30)(ADDRESS_LIST=(LOAD_BALANCE=off)(ADDRESS=(PROTOCOL=TCP)(HOST=svcorascanhop02.isn.rtss.qc.ca)(PORT=1521)))(CONNECT_DATA=(SERVICE_NAME=GCTSTRX.isn.rtss.qc.ca)))(DESCRIPTION=(ADDRESS_LIST=(LOAD_BALANCE=off)(ADDRESS=(PROTOCOL=TCP)(HOST=tcn00qubc01405.isn.rtss.qc.ca)(PORT=1521)))(CONNECT_DATA=(SERVICE_NAME=GCTSTRX.isn.rtss.qc.ca)))(DESCRIPTION=(ADDRESS_LIST=(LOAD_BALANCE=off)(ADDRESS=(PROTOCOL=TCP)(HOST=tcn00qubc01406.isn.rtss.qc.ca)(PORT=1521)))(CONNECT_DATA=(SERVICE_NAME=GCTSTRX.isn.rtss.qc.ca))))" user="SIGCT_TOXIQC_A_QUA" password="iTVtDmGSDne0PTdI3JpHWEbic"/>
+	<document>
+		<entity name="produits" pk="id"
+			query="select p.id, p.nom, p.detail, p.description, p.note, p.formulation, p.discontinue, p.homologation, p.proph, p.qteref as qteref, u.ABREV_SPECIAUX as qteref_um,(select uc.nom || ' ' ||  ug.nom || ' ' ||  u.nom from TX_RF_USAGE u INNER JOIN TX_RF_USAGE_GROUPE ug ON ug.id = u.ID_TX_RF_USAGE_GROUPE INNER JOIN TX_RF_USAGE_CATEG uc ON uc.id = ug.ID_TX_RF_USAGE_CATEG where u.id=p.usag_id) as codes_usage from TX_PRODUITS p ,TX_RF_UNITES u where  p.code_wf not in ('EN_REDACTION', 'SUPPRIME') and u.id (+)= p.qteref_um_id "
+			transformer="ClobTransformer">
+
+			<field column="ID" name="pid" />
+			<field column="DISCONTINUE" name="pdisc" />
+			<field column="FORMULATION" name="pfo" />
+
+			<field column="NOM" name="pna" />
+			<field column="NOM" name="xpna" />
+
+			<field column="DETAIL" name="pdt" />
+			<field column="DETAIL" name="xpdt" />
+
+			<field column="DESCRIPTION" name="pds"  clob="true"/>
+			<field column="DESCRIPTION" name="xpds"  clob="true"/>
+
+			<field column="HOMOLOGATION" name="pho" />
+			<field column="NOTE" name="pno" clob="true" />
+			<field column="NOTE" name="xpno" clob="true" />
+            
+			<field column="CODES_USAGE" name="pcu" />
+			<field column="CODES_USAGE" name="xpcu" />
+			<field column="PROPH" name="pph" />
+			<field column="QTEREF" name="pqteref" />
+			<field column="QTEREF_UM" name="pqterefum" />
+
+			<entity name="produits_ress"
+				query="select r.RRSS_ID, r.nom as rsss_nom from TX_RESSOURCES r, TX_ASSO_PRODUITS_RESSOURCES  ap where r.ID = ap.RRSS_ID and ap.PROD_ID  = ${produits.ID}">
+				<field column="RSSS_NOM" name="prs" />
+				<field column="RSSS_NOM" name="xprs" />
+			</entity>
+		</entity>
+
+	</document>
+</dataConfig>

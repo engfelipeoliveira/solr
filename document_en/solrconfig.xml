@@ -13,7 +13,7 @@
         <lst name="defaults">
             <str name="echoParams">explicit</str>
             <int name="rows">250</int>
-            <str name="fl">*</str>
+            <str name="fl">id,node_type,document_type,document_description,document_icone,document_ident_nom,document_ident_source_ext,document_ident_source_ctx,document_ident_id,section_information,section_titre,soussection_information,soussection_titre,rubrique_information_resume,rubrique_information_detail,rubrique_information_associe,score</str>
         </lst>
     </requestHandler>
     <!-- ping/healthcheck -->

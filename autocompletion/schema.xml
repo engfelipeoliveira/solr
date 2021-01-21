@@ -1,0 +1,40 @@
+<?xml version="1.0" ?> 
+<!--Test uplaod-->
+<schema name="Indexation des guides CAPQ" version="1.5">
+   <fieldType name="string" class="solr.StrField" sortMissingLast="true" />
+   <fieldType name="text" class="solr.TextField" positionIncrementGap="100">
+        <analyzer>
+		    <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+			<charFilter class="solr.MappingCharFilterFactory" mapping="lang/mapping-ISOLatin1Accent.txt"/>  
+			<filter class="solr.LowerCaseFilterFactory"/>
+			<filter class="solr.ASCIIFoldingFilterFactory"/> 
+			<filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" 
+														  generateNumberParts="1" 
+														  catenateWords="1" 
+														  catenateNumbers="1" 
+														  catenateAll="0" 
+														  splitOnCaseChange="0"
+														  preserveOriginal="1"
+														  />	
+			<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>  		           
+		 </analyzer>   
+    </fieldType>   
+    <fieldType name="plong" class="solr.LongPointField" />
+    <fields>     
+	<field name="ac_id" type="string" indexed="true"  stored="true"  multiValued="false" required="true"/>
+	<field name="ac_type" type="string" indexed="true"  stored="true"  multiValued="false" />       
+	
+	<field name="ac_nom" type="text" indexed="true"  stored="true"  multiValued="false" /> 
+	<field name="ac_detail" type="text" indexed="true"  stored="true"  multiValued="false" /> 
+	
+	<field name="acmp" type="text" indexed="true" stored="true" multiValued="true" />
+	<field name="_version_" type="plong" indexed="true" stored="true" multiValued="false"/>
+
+	<copyField source="ac_nom" dest="acmp" />
+	<copyField source="ac_detail" dest="acmp" />
+	
+ </fields>
+
+ <df>acmp</df>
+
+</schema>

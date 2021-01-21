@@ -1,0 +1,85 @@
+<dataConfig>
+    <!-- FON  -->
+	<dataSource name="jdbc" type="JdbcDataSource" driver="oracle.jdbc.OracleDriver" 
+	url="jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=svcorascanhop01.isn.rtss.qc.ca)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=TCN00QUBC01452.isn.rtss.qc.ca)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=TCN00QUBC01453.isn.rtss.qc.ca)(PORT=1521))(CONNECT_DATA=(SERVER=dedicated)(SERVICE_NAME=GCTDTRX.ISN.RTSS.QC.CA)))" 
+	user="SIGCT_SOCIAL_P_FON" password="zjgzZZWPDnOtORaBI7sqomRWD"/>
+	
+	
+	<!-- INT 
+	<dataSource name="jdbc" type="JdbcDataSource" driver="oracle.jdbc.OracleDriver" 
+	url="jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=svcorascanhop01.isn.rtss.qc.ca)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=TCN00QUBC01452.isn.rtss.qc.ca)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=TCN00QUBC01453.isn.rtss.qc.ca)(PORT=1521))(CONNECT_DATA=(SERVER=dedicated)(SERVICE_NAME=GCTDTRX.ISN.RTSS.QC.CA)))" 
+	user="SIGCT_SOCIAL_P_INT" password="ymW4aq9Cw1h1pGcaPNXUtwxVa"/>
+	-->
+	
+    <document>
+		
+        <entity name="document"
+				transformer="TemplateTransformer"
+				query="select SO_DOC.ID, SO_RF_DOC_TYPE.CODE, SO_RF_DOC_TYPE.DESCRIPTION, SO_RF_DOC_TYPE.ICONE
+						 from SO_DOC
+					    inner join SO_RF_DOC_TYPE on SO_DOC.ID_SO_RF_DOC_TYPE = SO_RF_DOC_TYPE.ID
+						where SO_DOC.ETAT = 'PUBLIE'" >
+            <field column="ID" name="id"/>
+            <field column="CODE" name="document_type"/>
+            <field column="DESCRIPTION" name="document_description"/>
+            <field column="ICONE" name="document_icone"/>
+            <field column="node_type" name="node_type" template="document"/>
+            
+			<entity name="identification" 
+					transformer="TemplateTransformer,ClobTransformer,ca.qc.gouv.msss.sigct.solr.handler.SigctCustomBlobTransformer"
+					query="select SO_DOC_IDENT.ID, SO_DOC_IDENT.NOM, decode(SO_DOC_IDENT.IND_SOURCE_EXTERNE, 1, SO_FICHIERS.CONTENU, null) CONTENU, decode(SO_DOC_IDENT.IND_SOURCE_EXTERNE, 1, SO_DOC_IDENT.OBJECTIF, null) OBJECTIF
+								  from SO_DOC_IDENT
+						    inner join SO_RF_STATUT_WF_LANGUE on SO_RF_STATUT_WF_LANGUE.ID = SO_DOC_IDENT.ID_SO_RF_STATUT_WF_LANGUE
+						    inner join SO_RF_STATUT_WF on SO_RF_STATUT_WF.ID = SO_RF_STATUT_WF_LANGUE.ID_SO_RF_STATUT_WF
+						    inner join SO_RF_DOC_LANGUE on SO_RF_DOC_LANGUE.ID = SO_RF_STATUT_WF_LANGUE.ID_SO_RF_DOC_LANGUE
+							left outer join SO_FICHIERS on SO_FICHIERS.ID = SO_DOC_IDENT.ID_SO_FICHIERS
+							where SO_DOC_IDENT.ID = (select max(SO_DOC_IDENT.ID) 
+														   from SO_DOC_IDENT 
+													 inner join SO_RF_STATUT_WF_LANGUE on SO_RF_STATUT_WF_LANGUE.ID = SO_DOC_IDENT.ID_SO_RF_STATUT_WF_LANGUE
+												     inner join SO_RF_STATUT_WF on SO_RF_STATUT_WF.ID = SO_RF_STATUT_WF_LANGUE.ID_SO_RF_STATUT_WF
+												     inner join SO_RF_DOC_LANGUE on SO_RF_DOC_LANGUE.ID = SO_RF_STATUT_WF_LANGUE.ID_SO_RF_DOC_LANGUE
+													 left outer join SO_FICHIERS on SO_FICHIERS.ID = SO_DOC_IDENT.ID_SO_FICHIERS
+														  where SO_DOC_IDENT.ID_SO_DOC = ${document.ID}
+														  and SO_RF_STATUT_WF.CODE = 'PUB'
+														    and SO_RF_DOC_LANGUE.CODE = 'FR')
+							  and SO_DOC_IDENT.ID_SO_DOC = ${document.ID}
+							  and SO_RF_DOC_LANGUE.CODE = 'FR'
+							  and SO_RF_STATUT_WF.CODE = 'PUB' " >
+                <field column="ID" name="id"/>
+                <field column="NOM" name="document_ident_nom"/>
+                <field column="NOM" name="document_ident_nom_order"/>
+                <field column="ID" name="document_ident_id"/>
+				<field column="CONTENU" name="document_ident_source_ext" blob="true" />
+				<field column="OBJECTIF" name="document_ident_source_objectif" clob="true" />
+				
+                <entity name="section" 
+						transformer="ca.qc.gouv.msss.sigct.solr.handler.SigctCustomTransformer"
+						query="select ID, INFORMATION, TITRE 
+								 from SO_DOC_SECT 
+								 where ID_SO_DOC_IDENT = ${identification.ID}" >
+                    <field column="section_information_${identification.ID}" name="section_information" />
+                    <field column="section_titre_${identification.ID}" name="section_titre" />
+					
+                    <entity name="soussection" 
+							transformer="ca.qc.gouv.msss.sigct.solr.handler.SigctCustomTransformer"
+							query="select ID, INFORMATION, TITRE 
+								     from SO_DOC_SSECT
+									where ID_SO_DOC_SECT = ${section.ID}" >
+                        <field column="soussection_information_${section.ID}" name="soussection_information" />
+                        <field column="soussection_titre_${section.ID}" name="soussection_titre" />
+                        
+                        <entity name="rubrique" 
+								transformer="ca.qc.gouv.msss.sigct.solr.handler.SigctCustomTransformer"
+								query="select ID, INFORMATION_RESUME, INFORMATION_DETAIL, INFORMATION_ASSOCIE 
+										 from SO_DOC_SSECT_RUBRQ
+										where ID_SO_DOC_SSECT = ${soussection.ID}" >
+                            <field column="rubrique_information_resume_${soussection.ID}" name="rubrique_information_resume" />
+                            <field column="rubrique_information_detail_${soussection.ID}" name="rubrique_information_detail" />
+                            <field column="rubrique_information_associe_${soussection.ID}" name="rubrique_information_associe" />
+                        </entity>
+                    </entity>
+				</entity>
+            </entity>
+        </entity>
+    </document>
+</dataConfig>

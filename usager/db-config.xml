@@ -1,26 +1,106 @@
 <dataConfig>
-
-	<dataSource name="jdbc" type="JdbcDataSource" driver="org.postgresql.Driver" 
-	url="jdbc:postgresql://localhost:5432/apisys_afonte" 
-	user="postgres" password="123456"/>
+    <!-- UNI  -->
+	<dataSource name="jdbc" type="JdbcDataSource" driver="oracle.jdbc.OracleDriver" 
+	url="jdbc:oracle:thin:@localhost:1521:xe" 
+	user="SIGCT_USAGER_P_LOC" password="jSigct2014"/>
+	
+    <!-- FON
+	<dataSource name="jdbc" type="JdbcDataSource" driver="oracle.jdbc.OracleDriver" 
+	url="jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=svcorascanhop01.isn.rtss.qc.ca)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=TCN00QUBC01452.isn.rtss.qc.ca)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=TCN00QUBC01453.isn.rtss.qc.ca)(PORT=1521))(CONNECT_DATA=(SERVER=dedicated)(SERVICE_NAME=GCTDTRX.ISN.RTSS.QC.CA)))" 
+	user="SIGCT_USAGER_P_FON" password="8whsrOdRiWG0batuJoMNTj1YP"/>
+    -->
+	<!-- INT 
+	<dataSource name="jdbc" type="JdbcDataSource" driver="oracle.jdbc.OracleDriver" 
+	url="jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=svcorascanhop01.isn.rtss.qc.ca)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=TCN00QUBC01452.isn.rtss.qc.ca)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=TCN00QUBC01453.isn.rtss.qc.ca)(PORT=1521))(CONNECT_DATA=(SERVER=dedicated)(SERVICE_NAME=GCTDTRX.ISN.RTSS.QC.CA)))" 
+	user="SIGCT_USAGER_A_INT" password="udwsAJaL0kWqm5Mpg3DciK21x"/>
+	-->
 	
     <document>
         <entity name="usager" pk = "id_us_usager"
                 transformer="TemplateTransformer"
-                query="SELECT id_us_usager,
-                              nom,
-                              prenom
-                         FROM us_usager_solr"
-				deltaQuery="SELECT id_us_usager,
-                              nom,
-                              prenom
-                         FROM us_usager_solr where id_us_usager=1 "
+                query="SELECT ID_US_USAGER,
+                              ID_US_USAGER_IDENT,
+                              NOM,
+                              PRENOM,
+                              DT_NAISS,
+                              MALENTENDANT,
+                              NAM,
+                              NIVEAU_IDENT,
+                              ACTIF,
+                              SEXE_CODE,
+                              LANGUE_CODE,
 
-						 >
-            <field column="id_us_usager" name="id" />
-            <field column="nom" name="nom" />
-            <field column="prenom" name="prenom" />
-			
+                              ADR_CODE_POSTAL_AFF, 
+                              ADR_MUNICIPALITE_AFF, 
+                              ADR_REGION_CODE_AFF, 
+                              ADR_REGION_NOM_AFF,
+                              
+                              COMM_COORDONNEES_AFF
+                         FROM us_usager_solr_vw" >
+            <field column="ID_US_USAGER" name="id" />
+            <field column="ID_US_USAGER_IDENT" name="ident_id" />
+            <field column="NOM" name="nom" />
+            <field column="PRENOM" name="prenom" />
+            <field column="DT_NAISS" name="date_naissance" />
+            <field column="MALENTENDANT" name="malentendant" />
+            <field column="NAM" name="nam" />
+            <field column="NIVEAU_IDENT" name="niveau_ident" />
+            <field column="ACTIF" name="actif" />
+            <field column="SEXE_CODE" name="sexe_code" />
+            <field column="LANGUE_CODE" name="langue_code" />
+
+            <field column="ADR_CODE_POSTAL_AFF" name="adresse_code_postal_aff" />
+            <field column="ADR_MUNICIPALITE_AFF" name="adresse_municipalite_aff" />
+            <field column="ADR_REGION_CODE_AFF" name="adresse_region_code_aff" />
+            <field column="ADR_REGION_NOM_AFF" name="adresse_region_nom_aff" />
+
+            <field column="COMM_COORDONNEES_AFF" name="communication_coordonnees_aff" />
+
+            <entity name="adresse" pk="id"
+					query="SELECT adr.ID, 
+                                  adr.adresse     AS ADRESSE,
+                                  adr.code_postal AS CODE_POSTAL,
+                                  adr.munic_code  AS MUNICIPALITE_CODE,
+                                  adr.munic_nom   AS MUNICIPALITE_NOM,
+                                  regn.code       AS REGION_CODE,
+                                  regn.nom        AS REGION_NOM,
+                                  type.code       AS TYPE_CODE,
+                                  adr.actif       AS ACTIF
+                             FROM us_usager_lieu_resid     adr,
+                                  st_rf_region             regn,
+                                  us_rf_type_adresse       type
+                            WHERE adr.id_us_usager_ident = ${usager.ID_US_USAGER_IDENT}
+                              AND regn.id(+) = adr.id_st_rf_region
+                              AND type.id(+) = adr.id_us_rf_type_adresse">
+                              
+                <field column="ADRESSE" name="adresse_adresse" />
+                <field column="CODE_POSTAL" name="adresse_code_postal" />
+                <field column="MUNICIPALITE_CODE" name="adresse_municipalite_code" />
+                <field column="MUNICIPALITE_NOM" name="adresse_municipalite_nom" />
+                <field column="REGION_CODE" name="adresse_region_code" />
+                <field column="REGION_NOM" name="adresse_region_nom" />
+                <field column="TYPE_CODE" name="adresse_type_code" />
+                <field column="ACTIF" name="adresse_actif" />
+            </entity>
+
+			<entity name="communications" pk="id"
+					query="SELECT comm.ID,
+                                  comm.coordonnees AS COORDONNEES,
+                                  equip.code       AS TYPE_EQUIP_CODE,
+                                  coord.code       AS TYPE_COORD_CODE,
+                                  comm.actif       AS ACTIF
+                             FROM us_usager_comm comm,
+                                  us_rf_type_equip_comm equip,
+                                  us_rf_type_coord_comm coord
+                            WHERE comm.id_us_usager_ident = ${usager.ID_US_USAGER_IDENT}
+                              AND equip.id(+) = comm.id_us_rf_type_equip_comm
+                              AND coord.id(+) = comm.id_us_rf_type_coord_comm">
+                              
+                <field column="COORDONNEES" name="communication_coordonnees" />
+                <field column="TYPE_EQUIP_CODE" name="communication_type_equip_code" />
+                <field column="TYPE_COORD_CODE" name="communication_type_coord_code" />
+                <field column="ACTIF" name="communication_actif" />
+            </entity>
         </entity>
     </document>
 </dataConfig>

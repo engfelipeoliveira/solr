@@ -1,0 +1,133 @@
+<?xml version="1.0" ?>  
+<schema name="Indexation des guides CAPQ" version="1.5">
+	<fieldType name="string" class="solr.StrField" sortMissingLast="true" />
+   	<fieldType name="long" class="solr.LongPointField"/>
+	<fieldType name="boolean" class="solr.BoolField"/>
+	<fieldType name="float" class="solr.FloatPointField"/>
+	<fieldType name="text_fr" class="solr.TextField" positionIncrementGap="100">
+		<analyzer type="index">
+			<charFilter class="solr.HTMLStripCharFilterFactory" />
+			<tokenizer class="solr.WhitespaceTokenizerFactory" />
+			<charFilter class="solr.MappingCharFilterFactory" mapping="lang/mapping-ISOLatin1Accent.txt" />
+			<filter class="solr.LowerCaseFilterFactory" />
+			<filter class="solr.ASCIIFoldingFilterFactory" />
+			<filter class="solr.WordDelimiterFilterFactory" splitOnCaseChange="0" splitOnNumerics="0" generateWordParts="1" catenateWords="0"
+				stemEnglishPossessive="0" preserveOriginal="1" />
+			<filter class="solr.SynonymFilterFactory" synonyms="lang/synonyms_fr.txt" ignoreCase="true" expand="true" />
+			<!-- removes l', etc -->
+			<filter class="solr.ElisionFilterFactory" ignoreCase="true" articles="lang/contractions_fr.txt" />
+			<!-- Discards common words. -->
+			<filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_fr.txt" format="snowball" />
+			<filter class="solr.SnowballPorterFilterFactory" language="French" />
+			<filter class="solr.PhoneticFilterFactory" encoder="Metaphone" inject="true" maxCodeLength="4" />
+			<filter class="solr.RemoveDuplicatesTokenFilterFactory" />
+		</analyzer>
+		<analyzer type="query">
+			<tokenizer class="solr.WhitespaceTokenizerFactory" />
+			<filter class="solr.WordDelimiterFilterFactory" stemEnglishPossessive="1" preserveOriginal="0" />
+			<filter class="solr.LowerCaseFilterFactory" />
+			<filter class="solr.ASCIIFoldingFilterFactory" />
+			<filter class="solr.SnowballPorterFilterFactory" language="French" />
+			<filter class="solr.ElisionFilterFactory" ignoreCase="true" articles="lang/contractions_fr.txt" />
+			<filter class="solr.PhoneticFilterFactory" encoder="Metaphone" inject="true" maxCodeLength="4" />
+		</analyzer>
+	</fieldType>
+
+	<fieldType name="text_exact" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+		<analyzer>
+			<charFilter class="solr.HTMLStripCharFilterFactory" />
+			<charFilter class="solr.MappingCharFilterFactory" mapping="lang/mapping-ISOLatin1Accent.txt" />
+			<tokenizer class="solr.WhitespaceTokenizerFactory" />
+			<filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="0" catenateWords="1" catenateNumbers="1"
+				catenateAll="0" preserveOriginal="1" />
+			<filter class="solr.LowerCaseFilterFactory" />
+		</analyzer>
+	</fieldType>
+
+	<fieldType name="integer" class="solr.IntPointField"/>
+	<fieldType name="text_code" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+		<analyzer>
+			<tokenizer class="solr.WhitespaceTokenizerFactory" />
+			<filter class="solr.LowerCaseFilterFactory" />
+			<filter class="solr.WordDelimiterFilterFactory" stemEnglishPossessive="0" splitOnNumerics="0" generateNumberParts="0" preserveOriginal="1" />
+		</analyzer>
+	</fieldType>
+
+	<fields>
+		<field name="pid" type="string" indexed="true" stored="true" multiValued="false" required="true" />
+		<field name="pdisc" type="boolean" indexed="false" stored="true" multiValued="false" required="false" />
+		<field name="pfo" type="boolean" indexed="true" stored="true" multiValued="false" required="false" />
+
+		<!-- Nom -->
+		<field name="pna" type="text_fr" indexed="true" stored="true" multiValued="false" />
+		<field name="xpna" type="text_exact" indexed="true" stored="true" multiValued="false" />
+
+		<!-- Détail (Autres noms) -->
+		<field name="pdt" type="text_fr" indexed="true" stored="true" multiValued="false" />
+		<field name="xpdt" type="text_exact" indexed="true" stored="true" multiValued="false" />
+
+		<!-- Description -->
+		<field name="pds" type="text_fr" indexed="true" stored="true" multiValued="false" />
+		<field name="xpds" type="text_exact" indexed="true" stored="true" multiValued="false" />
+
+		<!-- Homologation -->
+		<field name="pho" type="text_code" indexed="true" stored="false" multiValued="false" />
+        <!-- Propriété physico-chimique -->
+		<field name="pph" type="string" indexed="true" stored="true" multiValued="false" />
+
+		<!-- Notes -->
+		<field name="pno" type="text_fr" indexed="true" stored="false" multiValued="false" />
+		<field name="xpno" type="text_exact" indexed="true" stored="false" multiValued="false" />
+
+		<!-- Ressources associées -->
+		<field name="prs" type="text_fr" indexed="true" stored="false" multiValued="true" />
+		<field name="xprs" type="text_exact" indexed="true" stored="false" multiValued="true" />
+
+		<!-- Description des codes d’usage reliés (Nom de la catégorie + nom de la sous catégorie + nom de l’usage) -->
+		<field name="pcu" type="text_fr" indexed="true" stored="false" multiValued="false" />
+		<field name="xpcu" type="text_exact" indexed="true" stored="false" multiValued="false" />
+
+		<!-- champ de recherche par default : Nom + Détail + Description -->
+		<field name="psch" type="text_fr" indexed="true" stored="false" multiValued="true" />
+		<field name="xpsch" type="text_exact" indexed="true" stored="false" multiValued="true" />
+
+		<!-- CONTENU : Nom + Détail+ Description + Notes + Description des codes d’usage reliés (catégorie, sous-catégorie, usage) -->
+		<field name="pco" type="text_fr" indexed="true" stored="false" multiValued="true" />
+		<field name="xpco" type="text_exact" indexed="true" stored="false" multiValued="true" />
+		<field name="pqteref" type="float" indexed="false" stored="true" />
+		<field name="pqterefum" type="string" indexed="false" stored="true" />
+
+		<field name="_version_" type="long" indexed="true" stored="true" multiValued="false"/> 
+
+		<copyField source="pna" dest="psch" />
+		<copyField source="pds" dest="psch" />
+		<copyField source="pdt" dest="psch" />
+
+		<copyField source="xpna" dest="xpsch" />
+		<copyField source="xpds" dest="xpsch" />
+		<copyField source="xpdt" dest="xpsch" />
+
+		<copyField source="pna" dest="pco" />
+		<copyField source="pdt" dest="pco" />
+		<copyField source="pds" dest="pco" />
+		<copyField source="pno" dest="pco" />
+		<copyField source="pcu" dest="pco" />
+
+		<copyField source="xpna" dest="xpco" />
+		<copyField source="xpdt" dest="xpco" />
+		<copyField source="xpds" dest="xpco" />
+		<copyField source="xpno" dest="xpco" />
+		<copyField source="xpcu" dest="xpco" />
+
+	</fields>
+
+	<!-- field to use to determine and enforce document uniqueness. -->
+	<uniqueKey>pid</uniqueKey>
+
+	<!-- field for the QueryParser to use when an explicit fieldname is absent -->
+	<df>psch</df>
+
+	<!-- SolrQueryParser configuration: defaultOperator="AND|OR" -->
+
+</schema>
+

@@ -1,0 +1,16 @@
+<dataConfig>
+    <dataSource name="jdbc" type="JdbcDataSource" driver="oracle.jdbc.OracleDriver" url="jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=off)(FAILOVER=on)(DESCRIPTION=(CONNECT_TIMEOUT=3)(RETRY_COUNT=30)(ADDRESS_LIST=(LOAD_BALANCE=off)(ADDRESS=(PROTOCOL=TCP)(HOST=svcorascanhop01.isn.rtss.qc.ca)(PORT=1521)))(CONNECT_DATA=(SERVICE_NAME=GCTDTRX.isn.rtss.qc.ca)))(DESCRIPTION=(ADDRESS_LIST=(LOAD_BALANCE=off)(ADDRESS=(PROTOCOL=TCP)(HOST=tcn00qubc01452.isn.rtss.qc.ca)(PORT=1521)))(CONNECT_DATA=(SERVICE_NAME=GCTDTRX.isn.rtss.qc.ca)))(DESCRIPTION=(ADDRESS_LIST=(LOAD_BALANCE=off)(ADDRESS=(PROTOCOL=TCP)(HOST=tcn00qubc01453.isn.rtss.qc.ca)(PORT=1521)))(CONNECT_DATA=(SERVICE_NAME=GCTDTRX.isn.rtss.qc.ca))))" user="SIGCT_TOXIQC_L_INT" password="HSPA3Bct7P495B2rZpDw0474W"/>
+     <document>
+          <entity name="medication" 			    
+				query="select 'produit' as el_type, p.id, p.nom,  p.detail  from TX_PRODUITS  p , TX_CLASSES c where  p.code_wf not in ('EN_REDACTION', 'SUPPRIME') and p.class_id = c.ID and c.NOM ='Médicament'
+						union all 
+						select 'ingredient' as el_type, i.id, i.nom,  i.detail  from TX_INGREDIENTS i , TX_CLASSES c where  i.code_wf not in ('EN_REDACTION', 'SUPPRIME') and i.class_id = c.ID and c.NOM ='Médicament' ">
+            <field column="ID" name="ac_id" />
+            <field column="NOM" name="ac_nom" />            
+            <field column="DETAIL" name="ac_detail" />
+            <field column="EL_TYPE" name="ac_type" />            
+        </entity>
+    </document>
+</dataConfig>
+
+

@@ -1,0 +1,14 @@
+<dataConfig>
+    <dataSource name="jdbc" type="JdbcDataSource" driver="oracle.jdbc.OracleDriver" url="jdbc:oracle:thin:@(DESCRIPTION_LIST=(LOAD_BALANCE=off)(FAILOVER=on)(DESCRIPTION=(CONNECT_TIMEOUT=3)(RETRY_COUNT=30)(ADDRESS_LIST=(LOAD_BALANCE=off)(ADDRESS=(PROTOCOL=TCP)(HOST=svcorascanhop01.isn.rtss.qc.ca)(PORT=1521)))(CONNECT_DATA=(SERVICE_NAME=GCTDTRX.isn.rtss.qc.ca)))(DESCRIPTION=(ADDRESS_LIST=(LOAD_BALANCE=off)(ADDRESS=(PROTOCOL=TCP)(HOST=tcn00qubc01452.isn.rtss.qc.ca)(PORT=1521)))(CONNECT_DATA=(SERVICE_NAME=GCTDTRX.isn.rtss.qc.ca)))(DESCRIPTION=(ADDRESS_LIST=(LOAD_BALANCE=off)(ADDRESS=(PROTOCOL=TCP)(HOST=tcn00qubc01453.isn.rtss.qc.ca)(PORT=1521)))(CONNECT_DATA=(SERVICE_NAME=GCTDTRX.isn.rtss.qc.ca))))" user="SIGCT_TOXIQC_L_INT" password="HSPA3Bct7P495B2rZpDw0474W"/>
+    <document>
+        <entity name="guides" query="select id, nom ,detail, contenu as cnt from TX_GUIDES where etat = 'A' " transformer="ClobTransformer">
+            <field name="gid"  column="ID"/>
+            <field name="gna" column="NOM"/>
+            <field name="gdt"  column="DETAIL" />
+            <field name="xgna" column="NOM" />
+            <field name="xgdt" column="DETAIL" />
+            <field name="gcnt" column="CNT" clob="true"/>
+            <field name="xgcnt" column="CNT" clob="true"/>
+        </entity>
+    </document>
+</dataConfig>
