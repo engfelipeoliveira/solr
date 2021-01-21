@@ -1,8 +1,8 @@
 <dataConfig>
 
 	<dataSource type="JdbcDataSource" driver="com.microsoft.sqlserver.jdbc.SQLServerDriver"    
-		     url="jdbc:sqlserver://200.219.216.237:1433;databaseName=silviaarmarinho"    
-		     user="sasilviaarmarinho" password="F3lipe#"/> 	
+		     url="jdbc:sqlserver://200.219.216.237:1433;databaseName=armarinhosaojose"    
+		     user="saarmarinhosaojose" password="F3lipe#"/> 	
 	
     <document>
         <entity name="loja" pk="unique" 
