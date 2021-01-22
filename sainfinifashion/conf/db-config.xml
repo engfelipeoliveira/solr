@@ -4,7 +4,7 @@
 		     url="jdbc:sqlserver://200.219.216.237:1433;databaseName=infinifashion"    
 		     user="sainfinifashion" password="F3lipe#"/> 	
 	
-    <document>
+  <document>
         <entity name="loja" pk="unique" 
                 transformer="TemplateTransformer"
                 query="SELECT CONCAT(CAST(PRD.codProd AS int), '-', PRC.codGroup) AS [unique],
@@ -28,13 +28,13 @@
 								INNER JOIN tbl_brands B ON PRD.codBrand = B.codBrand 
 								INNER JOIN tbl_prices PRC ON G.codGrid = PRC.codGrid 
 								WHERE (G.active = 1) AND (G.link = 1) "
-				preImportDeleteQuery="SELECT CONCAT(CAST(PRD.codProd AS int), '-', PRC.codGroup) AS [unique],
+				deltaImportQuery="SELECT distinct CONCAT(CAST(PRD.codProd AS int), '-', PRC.codGroup) AS [unique],
 								CAST(G.codGrid AS int) AS codGrid, 
 								CAST(PRD.codProd AS int) AS codProd, 
 								'' AS imgSrc,
 								TRIM(PRD.[desc]) AS name, 
 								G.ref AS reference,
-								(SELECT COALESCE(ISNULL(DET.[desc], ' '), ' ') FROM tbl_details DET WHERE (DET.codTitle = 1) AND (DET.codProd = PRD.codProd)) AS description,
+								(SELECT COALESCE(ISNULL(CAST(DET.[desc] AS VARCHAR), ' '), ' ') FROM tbl_details DET WHERE (DET.codTitle = 1) AND (DET.codProd = PRD.codProd)) AS description,
 								TRIM(B.name) AS brand, 
 								CAST(PRD.dspOrder AS int) AS priority, 
 								CAST(PRC.codGroup AS int) AS codCatalog, 
@@ -53,15 +53,16 @@
 							LEFT JOIN [entities_changelog] CHG_PRI ON CHG_PRI.id = PRC.codPrice 
 							WHERE (G.active = 1) AND (G.link = 1) 
 							AND (CHG_PRD.id IS NOT NULL OR CHG_VAR.id IS NOT NULL OR CHG_PRI.id IS NOT NULL)
-							AND (CHG_PRD.action = 'DELETE' OR CHG_VAR.action = 'DELETE' OR CHG_PRI.action = 'DELETE')
-							AND (CHG_PRD.entity = 'Product' OR CHG_VAR.entity = 'ProductVariant' OR CHG_PRI.entity = 'Price')" 
-				deletedPkQuery=" SELECT CONCAT(CAST(PRD.codProd AS int), '-', PRC.codGroup) AS [unique],
+							AND (upper(CHG_PRD.action) IN ('UPDATE', 'INSERT') OR upper(CHG_VAR.action) IN ('UPDATE', 'INSERT') OR upper(CHG_PRI.action) IN ('UPDATE', 'INSERT'))
+							AND (upper(CHG_PRD.entity) = 'PRODUCT' OR upper(CHG_VAR.entity) = 'PRODUCTVARIANT' OR CHG_PRI.entity = 'PRICE')
+							AND (CHG_PRD.made_at > '${dataimporter.last_index_time}' OR CHG_VAR.made_at > '${dataimporter.last_index_time}' OR CHG_PRI.made_at > '${dataimporter.last_index_time}')"
+				deltaQuery=" SELECT distinct CONCAT(CAST(PRD.codProd AS int), '-', PRC.codGroup) AS [unique],
 								CAST(G.codGrid AS int) AS codGrid, 
 								CAST(PRD.codProd AS int) AS codProd, 
 								'' AS imgSrc,
 								TRIM(PRD.[desc]) AS name, 
 								G.ref AS reference,
-								(SELECT COALESCE(ISNULL(DET.[desc], ' '), ' ') FROM tbl_details DET WHERE (DET.codTitle = 1) AND (DET.codProd = PRD.codProd)) AS description,
+								(SELECT COALESCE(ISNULL(CAST(DET.[desc] AS VARCHAR), ' '), ' ') FROM tbl_details DET WHERE (DET.codTitle = 1) AND (DET.codProd = PRD.codProd)) AS description,
 								TRIM(B.name) AS brand, 
 								CAST(PRD.dspOrder AS int) AS priority, 
 								CAST(PRC.codGroup AS int) AS codCatalog, 
@@ -71,41 +72,6 @@
 								G.link, 
 								G.codComp,
 								(SELECT CAST(MAX(SC.score) AS int) AS scoreProd from stats_product_score SC where SC.sku = G.ref) AS scoreProd
-							FROM [tbl_grid] G
-							INNER JOIN tbl_prod PRD ON G.codProd = PRD.codProd 
-							INNER JOIN tbl_brands B ON PRD.codBrand = B.codBrand 
-							INNER JOIN tbl_prices PRC ON G.codGrid = PRC.codGrid 
-							LEFT JOIN [entities_changelog] CHG_PRD ON CHG_PRD.id = PRD.codProd  
-							LEFT JOIN [entities_changelog] CHG_VAR ON CHG_VAR.id = G.codGrid 
-							LEFT JOIN [entities_changelog] CHG_PRI ON CHG_PRI.id = PRC.codPrice 
-							WHERE (G.active = 1) AND (G.link = 1) 
-							AND (CHG_PRD.id IS NOT NULL OR CHG_VAR.id IS NOT NULL OR CHG_PRI.id IS NOT NULL)
-							AND (CHG_PRD.id IS NOT NULL OR CHG_VAR.id IS NOT NULL OR CHG_PRI.id IS NOT NULL)
-							AND (CHG_PRD.action = 'DELETE' OR CHG_VAR.action = 'DELETE' OR CHG_PRI.action = 'DELETE')
-							AND (CHG_PRD.entity = 'Product' OR CHG_VAR.entity = 'ProductVariant' OR CHG_PRI.entity = 'Price')
-							AND (CHG_PRD.made_at > '${dataimporter.last_index_time}' OR CHG_VAR.made_at > '${dataimporter.last_index_time}' OR CHG_PRI.made_at > '${dataimporter.last_index_time}')"				
-				deltaImportQuery="SELECT CONCAT(CAST(PRD.codProd AS int), '-', PRC.codGroup) AS [unique],
-								CAST(G.codGrid AS int) AS codGrid, 
-								CAST(PRD.codProd AS int) AS codProd, 
-								'' AS imgSrc,
-								TRIM(PRD.[desc]) AS name, 
-								G.ref AS reference,
-								(SELECT COALESCE(ISNULL(DET.[desc], ' '), ' ') FROM tbl_details DET WHERE (DET.codTitle = 1) AND (DET.codProd = PRD.codProd)) AS description,
-								TRIM(B.name) AS brand, 
-								CAST(PRD.dspOrder AS int) AS priority, 
-								CAST(PRC.codGroup AS int) AS codCatalog, 
-								ROUND((1 - CAST(PRC.discRate AS float) / 100) * (CAST(PRC.prc AS float)), 2) AS ourPrice,
-								CAST(PRC.codAvailability AS int) AS availabilityCode, 
-								CAST(PRC.codStatus AS int) AS statusCode,
-								G.link, 
-								G.codComp,
-								(SELECT CAST(MAX(SC.score) AS int) AS scoreProd from stats_product_score SC where SC.sku = G.ref) AS scoreProd
-								FROM [tbl_grid] G
-								INNER JOIN tbl_prod PRD ON G.codProd = PRD.codProd 
-								INNER JOIN tbl_brands B ON PRD.codBrand = B.codBrand 
-								INNER JOIN tbl_prices PRC ON G.codGrid = PRC.codGrid 
-								WHERE CONCAT(CAST(PRD.codProd AS int), '-', PRC.codGroup) = '${dataimporter.delta.unique}'"
-				deltaQuery=" SELECT CONCAT(CAST(PRD.codProd AS int), '-', PRC.codGroup) AS [unique]
 							FROM [tbl_grid] G
 							INNER JOIN tbl_prod PRD ON G.codProd = PRD.codProd 
 							INNER JOIN tbl_brands B ON PRD.codBrand = B.codBrand 
@@ -115,8 +81,8 @@
 							LEFT JOIN [entities_changelog] CHG_PRI ON CHG_PRI.id = PRC.codPrice 
 							WHERE (G.active = 1) AND (G.link = 1) 
 							AND (CHG_PRD.id IS NOT NULL OR CHG_VAR.id IS NOT NULL OR CHG_PRI.id IS NOT NULL)
-							AND (CHG_PRD.action IN ('UPDATE', 'INSERT') OR CHG_VAR.action IN ('UPDATE', 'INSERT') OR CHG_PRI.action IN ('UPDATE', 'INSERT'))
-							AND (CHG_PRD.entity = 'Product' OR CHG_VAR.entity = 'ProductVariant' OR CHG_PRI.entity = 'Price')
+							AND (upper(CHG_PRD.action) IN ('UPDATE', 'INSERT') OR upper(CHG_VAR.action) IN ('UPDATE', 'INSERT') OR upper(CHG_PRI.action) IN ('UPDATE', 'INSERT'))
+							AND (upper(CHG_PRD.entity) = 'PRODUCT' OR upper(CHG_VAR.entity) = 'PRODUCTVARIANT' OR CHG_PRI.entity = 'PRICE')
 							AND (CHG_PRD.made_at > '${dataimporter.last_index_time}' OR CHG_VAR.made_at > '${dataimporter.last_index_time}' OR CHG_PRI.made_at > '${dataimporter.last_index_time}')	" >
 
             <field column="unique" name="unique" />
@@ -212,3 +178,4 @@
         </entity>
     </document>
 </dataConfig>
+
